@@ -8,7 +8,8 @@ GTP5G_INSTALLER_TAG = 'latest'
 UERANSIM_IMAGE = 'docker_ueransim'
 UERANSIM_TAG = 'latest'
 
-.PHONY: build base gtp5g_installer ueransim
+
+.PHONY: build base gtp5g_installer ueransim tshark
 base:
 	docker build -t ${DOCKER_IMAGE_OWNER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ./base
 	docker image ls ${DOCKER_IMAGE_OWNER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
@@ -22,12 +23,16 @@ ueransim:
 	docker build -t ${DOCKER_IMAGE_OWNER}/${UERANSIM_IMAGE}:${UERANSIM_TAG} ./ueransim 
 	docker image ls  ${DOCKER_IMAGE_OWNER}/${UERANSIM_IMAGE}:${UERANSIM_TAG}
 
+tshark:
+	docker build -t ${DOCKER_IMAGE_OWNER}/tshark:latest ./tshark
+	docker image ls ${DOCKER_IMAGE_OWNER}/tshark:latest
+
 build-%: nf_%/
 	docker build -t ${DOCKER_IMAGE_OWNER}/free5gc-$* ./nf_$*
 
 build-nfs: build-amf build-smf build-ausf build-n3iwf build-nrf build-pcf build-udm build-udr build-upf build-webui build-nssf
 
-build:  base gtp5g_installer ueransim build-nfs
+build:  base gtp5g_installer ueransim tshark  build-nfs
 
 push-%: nf_%/
 	docker push ${DOCKER_IMAGE_OWNER}/free5gc-$*
@@ -43,5 +48,8 @@ push-installer:
 push-ueransim:
 	docker push ${DOCKER_IMAGE_OWNER}/${UERANSIM_IMAGE}:${UERANSIM_TAG}
 
-push: push-base push-installer push-ueransim push-nfs
+push-tshark:
+	docker push ${DOCKER_IMAGE_OWNER}/tshark:latest
+
+push: push-base push-installer push-ueransim push-tshark push-nfs
 	
